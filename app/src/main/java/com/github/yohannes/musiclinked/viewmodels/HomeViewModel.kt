@@ -12,6 +12,7 @@ import com.github.yohannes.musiclinked.exoplayer.MediaPlayerServiceConnection
 import com.github.yohannes.musiclinked.services.PlayerService
 import com.github.yohannes.musiclinked.ui.screens.home.SongsListState
 import com.github.yohannes.musiclinked.util.Constants
+import com.google.android.exoplayer2.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hoods.com.audioplayer.media.exoplayer.currentPosition
 import hoods.com.audioplayer.media.exoplayer.isPlaying
@@ -36,9 +37,9 @@ class HomeViewModel @Inject constructor(
     private val isConnected = serviceConnection.isConnected
 
     private lateinit var rootMediaId: String
-    private var currentPlayBackPosition by mutableStateOf(0L)
+    var currentPlayBackPosition by mutableStateOf(0L)
     private var updatePosition = true
-    private lateinit var playbackState: StateFlow<PlaybackStateCompat?>
+    private val playbackState = serviceConnection.playBackState
     val isAudioPlaying: Boolean
         get() = playbackState.value?.isPlaying == true
 
@@ -51,7 +52,11 @@ class HomeViewModel @Inject constructor(
             super.onChildrenLoaded(parentId, children)
         }
     }
-    private lateinit var serviceConnection: MediaPlayerServiceConnection
+    private val serviceConnection = serviceConnection.also {
+        if (state.value.songsList.isNotEmpty()) {
+            updatePlayBack()
+        }
+    }
 
     private val currentDuration: Long
         get() = PlayerService.currentDuration
@@ -73,13 +78,6 @@ class HomeViewModel @Inject constructor(
                     songsList = list,
                     isLoading = false
                 )
-            }
-
-            this@HomeViewModel.playbackState = serviceConnection.playBackState
-            this@HomeViewModel.serviceConnection = serviceConnection.also {
-                if (state.value.songsList.isNotEmpty()) {
-                    //updatePlayBack()
-                }
             }
 
 
@@ -111,6 +109,7 @@ class HomeViewModel @Inject constructor(
                 null
             )
         }
+        updatePlayBack()
     }
 
     fun stopPlayBack() {
@@ -129,18 +128,38 @@ class HomeViewModel @Inject constructor(
         serviceConnection.skipToNext()
     }
 
+    fun skipToPrev() {
+        serviceConnection.skipToPrev()
+    }
+
     fun seekTo(value: Float) {
         serviceConnection.transportControl.seekTo(
             (currentDuration * value / 100f).toLong()
         )
     }
 
+    fun loopOne() {
+        serviceConnection.transportControl.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE)
+    }
+
+    fun loopAll() {
+        serviceConnection.transportControl.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL)
+    }
+
+    fun loopNone() {
+        serviceConnection.transportControl.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
+    }
+
+    fun shuffle() {
+        serviceConnection.transportControl.setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL)
+    }
+
     private fun updatePlayBack() {
         viewModelScope.launch {
             val position = playbackState.value?.currentPosition
 
-            if (currentPlayBackPosition != position) {
-                currentPlayBackPosition = position!!
+            if (currentPlayBackPosition != position && position != null) {
+                currentPlayBackPosition = position
             }
 
             if (currentDuration > 0) {

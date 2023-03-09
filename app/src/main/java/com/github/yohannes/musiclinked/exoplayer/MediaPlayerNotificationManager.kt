@@ -1,6 +1,5 @@
 package com.github.yohannes.musiclinked.exoplayer
 
-
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,7 +9,6 @@ import com.github.yohannes.musiclinked.R
 import com.github.yohannes.musiclinked.util.Constants
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-
 
 internal class MediaPlayerNotificationManager(
     context: Context,

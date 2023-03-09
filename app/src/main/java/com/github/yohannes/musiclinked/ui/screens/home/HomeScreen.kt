@@ -2,32 +2,35 @@ package com.github.yohannes.musiclinked.ui.screens.home
 
 import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.github.yohannes.musiclinked.R
 import com.github.yohannes.musiclinked.data.models.SongModel
+import com.github.yohannes.musiclinked.ui.screens.home.components.IconBtn
 import com.github.yohannes.musiclinked.ui.screens.home.components.SongListItem
+import com.github.yohannes.musiclinked.ui.theme.MusicLinkedTheme
 import com.github.yohannes.musiclinked.viewmodels.HomeViewModel
+import java.util.*
 import kotlin.math.floor
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -41,27 +44,40 @@ fun HomeScreen(
     val scaffoldState = rememberBottomSheetScaffoldState()
 
     val animatedHeight by animateDpAsState(
-        targetValue = BottomSheetScaffoldDefaults.SheetPeekHeight
+        targetValue = if (homeViewModel.currentPlayingAudio.value == null) 0.dp
+        else BottomSheetScaffoldDefaults.SheetPeekHeight
     )
 
     BottomSheetScaffold(
         sheetContent = {
             homeViewModel.currentPlayingAudio.value?.let { song ->
-                BottomBar(
+                PlayerBottomSheet(
                     progress = homeViewModel.currentAudioProgress.value,
                     onProgressChange = {
                         homeViewModel.seekTo(it)
                     },
-                    audio = song,
+                    songModel = song,
                     onStart = {
                         homeViewModel.playAudio(it)
                     },
                     onNext = {
                         homeViewModel.skipToNext()
                     },
-                    isPlaying = homeViewModel.isAudioPlaying
+                    onPrevious = {
+                        homeViewModel.skipToPrev()
+                    },
+                    onLoop = {
+                        homeViewModel.loopAll()
+                    },
+                    onRepeat = {
+                        homeViewModel.loopOne()
+                    },
+                    onShuffle = {
+                        homeViewModel.shuffle()
+                    },
+                    isPlaying = homeViewModel.isAudioPlaying,
+                    elapsedTime = homeViewModel.currentPlayBackPosition
                 )
-
             }
         },
         scaffoldState = scaffoldState,
@@ -93,7 +109,9 @@ fun HomeScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(state.songsList.size) { index ->
-                        SongListItem(songModel = state.songsList[index], onClick = { homeViewModel.playAudio(it) })
+                        SongListItem(
+                            songModel = state.songsList[index],
+                            onClick = { homeViewModel.playAudio(it) })
                     }
                 }
             }
@@ -110,144 +128,139 @@ private fun timeStampToDuration(position: Long): String {
     else "%d:%02d".format(minutes, remainingSeconds)
 }
 
+private fun formatDuration(position: Long): String {
+    val mFormatBuilder = StringBuilder()
+    val mFormatter = Formatter(mFormatBuilder, Locale.getDefault())
+    val totalSeconds: Long = position / 1000
+    val seconds = totalSeconds % 60
+    val minutes = totalSeconds / 60 % 60
+    val hours = totalSeconds / 3600
+
+    mFormatBuilder.setLength(0)
+    return if (hours > 0) {
+        mFormatter.format("%d:%02d:%02d", hours, minutes, seconds).toString()
+    } else {
+        mFormatter.format("%02d:%02d", minutes, seconds).toString()
+    }
+}
+
+@Preview(showBackground = false)
 @Composable
-fun BottomBar(
+fun BottomBarPreview() {
+    MusicLinkedTheme {
+        PlayerBottomSheet(
+            progress = 1f,
+            onProgressChange = {},
+            songModel = SongModel(),
+            onStart = {},
+            onNext = {},
+            onPrevious = {},
+            isPlaying = false,
+            elapsedTime = 0,
+            onLoop = {},
+            onRepeat = {},
+            onShuffle = {}
+        )
+    }
+}
+
+@Composable
+fun PlayerBottomSheet(
     progress: Float,
+    elapsedTime: Long,
     onProgressChange: (Float) -> Unit,
-    audio: SongModel,
+    songModel: SongModel,
     onStart: (SongModel) -> Unit,
     onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onLoop: () -> Unit,
+    onRepeat: () -> Unit,
+    onShuffle: () -> Unit,
     isPlaying: Boolean
 ) {
-    Column {
+    Column(modifier = Modifier.padding(16.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = 8.dp, horizontal = 8.dp)
         ) {
-            ArtistInfo(
-                audio = audio,
-                modifier = Modifier.weight(1f),
-            )
-            MediaPlayerController(
-                isAudioPlaying = isPlaying,
-                onStart = { onStart.invoke(audio) },
-                onNext = { onNext.invoke() }
-            )
+            if (songModel.image != null) {
+                Image(
+                    bitmap = songModel.image.asImageBitmap(),
+                    contentDescription = "App Icon",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_photo),
+                    contentDescription = "App Icon",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = songModel.title.toString(), style = MaterialTheme.typography.subtitle1)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = songModel.artist.toString(),
+                    style = MaterialTheme.typography.caption,
+                    color = Color.DarkGray
+                )
+            }
         }
         Slider(
+            modifier = Modifier
+                .height(25.dp),
             value = progress,
             onValueChange = { onProgressChange.invoke(it) },
             valueRange = 0f..100f
         )
-    }
-}
-
-
-@Composable
-fun MediaPlayerController(
-    isAudioPlaying: Boolean,
-    onStart: () -> Unit,
-    onNext: () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .height(56.dp)
-            .padding(4.dp)
-    ) {
-        PlayerIconItem(
-            icon = if (isAudioPlaying) Icons.Default.Home
-            else Icons.Default.PlayArrow,
-            backgroundColor = MaterialTheme.colors.primary
-        ) {
-            onStart.invoke()
+        Row {
+            Text(text = formatDuration(elapsedTime), fontSize = 12.sp)
+            Spacer(modifier = Modifier.weight(2f))
+            Text(text = formatDuration(songModel.duration!!.toLong()), fontSize = 12.sp)
         }
-        Spacer(modifier = Modifier.size(8.dp))
-        Icon(
-            imageVector = Icons.Default.Delete,
-            contentDescription = null,
-            modifier = Modifier.clickable {
-                onNext.invoke()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            IconBtn(resIcon = R.drawable.baseline_loop_24, onClick = {
+                onLoop.invoke()
+            })
+            IconBtn(resIcon = R.drawable.baseline_skip_previous_24, onClick = {
+                onPrevious.invoke()
+            })
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(MaterialTheme.colors.primary, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                IconBtn(
+                    tint = Color.White,
+                    resIcon = if (isPlaying) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24,
+                    onClick = {
+                        onStart.invoke(songModel)
+                    }
+                )
             }
-        )
-    }
-}
-
-
-@Composable
-fun ArtistInfo(
-    modifier: Modifier = Modifier,
-    audio: SongModel
-) {
-    Row(
-        modifier = modifier.padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-
-        PlayerIconItem(
-            icon = Icons.Default.Phone,
-            border = BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colors.onSurface
-            ),
-        ) {}
-        Spacer(modifier = Modifier.size(4.dp))
-
-        Column {
-            Text(
-                text = audio.title.toString(),
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.h6,
-                overflow = TextOverflow.Clip,
-                modifier = Modifier.weight(1f),
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                text = audio.artist.toString(),
-                fontWeight = FontWeight.Normal,
-                style = MaterialTheme.typography.subtitle1,
-                overflow = TextOverflow.Clip,
-                maxLines = 1
-            )
+            IconBtn(resIcon = R.drawable.baseline_skip_next_24, onClick = {
+                onNext.invoke()
+            })
+            IconBtn(resIcon = R.drawable.baseline_repeat_24, onClick = {
+                onRepeat.invoke()
+            })
+            IconBtn(resIcon = R.drawable.baseline_shuffle_24, onClick = {
+                onShuffle.invoke()
+            })
         }
-    }
-}
 
-
-@Composable
-fun PlayerIconItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    border: BorderStroke? = null,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    color: Color = MaterialTheme.colors.onSurface,
-    onClick: () -> Unit
-) {
-
-    Surface(
-        shape = CircleShape,
-        border = border,
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable {
-                onClick.invoke()
-            },
-        contentColor = color,
-        color = backgroundColor
-
-    ) {
-        Box(
-            modifier = Modifier.padding(4.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-            )
-        }
     }
 }

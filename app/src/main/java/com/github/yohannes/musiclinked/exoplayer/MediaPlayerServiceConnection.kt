@@ -42,6 +42,7 @@ class MediaPlayerServiceConnection @Inject constructor(
         mediaBrowserServiceCallback,
         null
     ).apply {
+        Log.e("attempt", "to connect.")
         connect()
     }
 
@@ -52,8 +53,8 @@ class MediaPlayerServiceConnection @Inject constructor(
     val transportControl: MediaControllerCompat.TransportControls
         get() = mediaControllerCompat.transportControls
 
-
     fun playMusic(musicList: List<SongModel>) {
+        Log.e("playMusic:", "Is mediaBrowser connected? ${mediaBrowser.isConnected}")
         audioList = musicList
         mediaBrowser.sendCustomAction(Constants.START_MEDIA_PLAY_ACTION, null, null)
     }
@@ -72,6 +73,10 @@ class MediaPlayerServiceConnection @Inject constructor(
 
     fun skipToNext() {
         transportControl.skipToNext()
+    }
+
+    fun skipToPrev() {
+        transportControl.skipToPrevious()
     }
 
     fun subscribe(

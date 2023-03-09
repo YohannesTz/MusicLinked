@@ -60,7 +60,6 @@ class MediaSource @Inject constructor(private val repository: SongsRepository){
                 .build()
         }
         state = AudioSourceState.STATE_INITIALIZED
-
     }
 
     fun asMediaSource(dataSource: CacheDataSource.Factory):
@@ -71,17 +70,12 @@ class MediaSource @Inject constructor(private val repository: SongsRepository){
             val mediaItem = MediaItem.fromUri(
                 mediaMetadataCompat.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
             )
-
             val mediaSource = ProgressiveMediaSource
                 .Factory(dataSource)
                 .createMediaSource(mediaItem)
-
             concatenatingMediaSource.addMediaSource(mediaSource)
-
-
         }
         return concatenatingMediaSource
-
     }
 
 
