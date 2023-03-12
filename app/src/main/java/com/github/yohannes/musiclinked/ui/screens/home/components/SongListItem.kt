@@ -22,8 +22,8 @@ import com.github.yohannes.musiclinked.R
 fun SongListItem(songModel: SongModel, onClick: (songModel: SongModel) -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp)
-        .clickable { onClick(songModel) }, elevation = 4.dp, shape = RoundedCornerShape(8.dp)
+        .padding(horizontal = 8.dp, vertical = 2.dp)
+        .clickable { onClick(songModel) }, elevation = 0.dp, shape = RoundedCornerShape(8.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
             if (songModel.image != null) {

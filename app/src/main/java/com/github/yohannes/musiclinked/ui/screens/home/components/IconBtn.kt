@@ -1,5 +1,6 @@
 package com.github.yohannes.musiclinked.ui.screens.home.components
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -8,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.github.yohannes.musiclinked.R
 
 
@@ -19,6 +22,7 @@ fun IconBtn(
     selected: Boolean = true,
     selectedIcon: Int = resIcon,
     onClick: () -> Unit = {},
+    size: Dp = 24.dp
 ) {
     IconButton(modifier = modifier, onClick = onClick) {
         Icon(
@@ -28,7 +32,8 @@ fun IconBtn(
                 painterResource(id = resIcon)
             },
             contentDescription = null,
-            tint = tint
+            tint = tint,
+            modifier = Modifier.size(size)
         )
     }
 }

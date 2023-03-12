@@ -1,6 +1,5 @@
 package com.github.yohannes.musiclinked.ui.screens.home
 
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,7 +30,6 @@ import com.github.yohannes.musiclinked.ui.screens.home.components.SongListItem
 import com.github.yohannes.musiclinked.ui.theme.MusicLinkedTheme
 import com.github.yohannes.musiclinked.viewmodels.HomeViewModel
 import java.util.*
-import kotlin.math.floor
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -87,8 +85,6 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            Log.e("isLoading", state.isLoading.toString())
-            Log.e("state.ListSize", state.songsList.size.toString())
             if (state.isLoading) {
                 Column(
                     modifier = Modifier
@@ -117,15 +113,6 @@ fun HomeScreen(
             }
         }
     }
-}
-
-private fun timeStampToDuration(position: Long): String {
-    val totalSeconds = floor(position / 1E3).toInt()
-    val minutes = totalSeconds / 60
-    val remainingSeconds = totalSeconds - (minutes * 60)
-
-    return if (position < 0) "--:--"
-    else "%d:%02d".format(minutes, remainingSeconds)
 }
 
 private fun formatDuration(position: Long): String {
@@ -248,7 +235,8 @@ fun PlayerBottomSheet(
                     resIcon = if (isPlaying) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24,
                     onClick = {
                         onStart.invoke(songModel)
-                    }
+                    },
+                    size = 34.dp
                 )
             }
             IconBtn(resIcon = R.drawable.baseline_skip_next_24, onClick = {
@@ -261,6 +249,5 @@ fun PlayerBottomSheet(
                 onShuffle.invoke()
             })
         }
-
     }
 }

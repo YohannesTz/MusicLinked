@@ -86,7 +86,11 @@ class SongsRepository @Inject constructor(private val context: Context) {
         return songsAreInStorage
     }
 
-    fun getListOfSongs(): ArrayList<SongModel> {
+    fun getArrayListOfSongs(): ArrayList<SongModel> {
+        return getSongsFromStorage()
+    }
+
+    fun getListOfSongs(): List<SongModel> {
         return getSongsFromStorage()
     }
 }

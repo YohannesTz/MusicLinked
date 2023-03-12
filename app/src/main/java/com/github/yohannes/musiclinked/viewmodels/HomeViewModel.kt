@@ -32,7 +32,6 @@ class HomeViewModel @Inject constructor(
     private val _state = mutableStateOf(SongsListState())
     val state: State<SongsListState> = _state
 
-
     val currentPlayingAudio = serviceConnection.currentPlayingAudio
     private val isConnected = serviceConnection.isConnected
 
@@ -62,25 +61,25 @@ class HomeViewModel @Inject constructor(
         get() = PlayerService.currentDuration
 
     var currentAudioProgress = mutableStateOf(0f)
-
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             withContext(Dispatchers.Main) {
                 _state.value = state.value.copy(
                     isLoading = true
                 )
             }
 
-            val list = songsRepository.getListOfSongs()
-            Log.e("SongList", list.size.toString())
+            withContext(Dispatchers.IO) {
+                val list = songsRepository.getListOfSongs()
+                _state.value = state.value.copy(
+                    songsList = list
+                )
+            }
             withContext(Dispatchers.Main) {
                 _state.value = state.value.copy(
-                    songsList = list,
                     isLoading = false
                 )
             }
-
-
             isConnected.collect {
                 Log.e("isConnected?", "$it")
                 if (it) {
