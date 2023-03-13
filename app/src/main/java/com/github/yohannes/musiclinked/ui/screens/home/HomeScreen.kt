@@ -103,10 +103,10 @@ fun HomeScreen(
                 }
 
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(state.songsList.size) { index ->
+                Column(modifier = Modifier.fillMaxSize()) {
+                    state.songsList.forEach { songModel ->
                         SongListItem(
-                            songModel = state.songsList[index],
+                            songModel = songModel,
                             onClick = { homeViewModel.playAudio(it) })
                     }
                 }

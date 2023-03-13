@@ -63,23 +63,28 @@ class HomeViewModel @Inject constructor(
     var currentAudioProgress = mutableStateOf(0f)
     init {
         viewModelScope.launch {
-            withContext(Dispatchers.Main) {
+  //          withContext(Dispatchers.Main) {
                 _state.value = state.value.copy(
                     isLoading = true
                 )
-            }
+//            }
 
-            withContext(Dispatchers.IO) {
-                val list = songsRepository.getListOfSongs()
+            /*withContext(Dispatchers.IO) {
+                val list = getListOfSongs()
                 _state.value = state.value.copy(
                     songsList = list
                 )
+            }*/
+
+            val list = withContext(Dispatchers.IO) {
+                getListOfSongs()
             }
-            withContext(Dispatchers.Main) {
-                _state.value = state.value.copy(
-                    isLoading = false
-                )
-            }
+
+            _state.value = state.value.copy(
+                songsList = list,
+                isLoading = false
+            )
+
             isConnected.collect {
                 Log.e("isConnected?", "$it")
                 if (it) {
@@ -91,6 +96,10 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun getListOfSongs(): List<SongModel> {
+        return songsRepository.getListOfSongs()
     }
 
     fun playAudio(currentAudio: SongModel) {
@@ -171,6 +180,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+
 
     override fun onCleared() {
         super.onCleared()
