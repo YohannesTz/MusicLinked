@@ -182,25 +182,27 @@ fun PlayerBottomSheet(
     isPlaying: Boolean
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
-        if (songModel.image != null) {
-            Image(
-                bitmap = songModel.image.asImageBitmap(),
-                contentDescription = "App Icon",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(300.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.baseline_photo),
-                contentDescription = "App Icon",
-                contentScale = ContentScale.Crop,
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.Center) {
+            if (songModel.image != null) {
+                Image(
+                    bitmap = songModel.image.asImageBitmap(),
+                    contentDescription = "App Icon",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(300.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_photo),
+                    contentDescription = "App Icon",
+                    contentScale = ContentScale.Crop,
 
-                modifier = Modifier
-                    .size(300.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
+                    modifier = Modifier
+                        .size(300.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
         }
         Row(
             modifier = Modifier
