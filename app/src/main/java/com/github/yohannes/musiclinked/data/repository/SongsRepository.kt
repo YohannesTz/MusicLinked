@@ -12,6 +12,7 @@ import android.util.Log
 import com.github.yohannes.musiclinked.data.models.SongModel
 import com.github.yohannes.musiclinked.util.FileUtils
 import com.github.yohannes.musiclinked.util.ImageUtils
+import java.util.LinkedList
 
 class SongsRepository @Inject constructor(private val context: Context) {
 
@@ -88,6 +89,10 @@ class SongsRepository @Inject constructor(private val context: Context) {
 
     fun getArrayListOfSongs(): ArrayList<SongModel> {
         return getSongsFromStorage()
+    }
+
+    fun getLstOfSongs(): LinkedList<SongModel> {
+        return getSongsFromStorage() as LinkedList<SongModel>
     }
 
     fun getListOfSongs(): List<SongModel> {

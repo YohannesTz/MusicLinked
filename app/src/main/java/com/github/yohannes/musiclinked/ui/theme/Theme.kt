@@ -27,6 +27,11 @@ private val LightColorPalette = lightColors(
     */
 )
 
+private val CustomColorPalette = darkColors(
+    primary = White,
+    primaryVariant = White,
+)
+
 @Composable
 fun MusicLinkedTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) {
@@ -36,7 +41,7 @@ fun MusicLinkedTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Compo
     }
 
     MaterialTheme(
-        colors = colors,
+        colors = CustomColorPalette,
         typography = Typography,
         shapes = Shapes,
         content = content

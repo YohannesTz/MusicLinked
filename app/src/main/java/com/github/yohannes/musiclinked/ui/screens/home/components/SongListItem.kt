@@ -38,7 +38,7 @@ fun SongListItem(songModel: SongModel, onClick: (songModel: SongModel) -> Unit) 
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.music_note_icon),
+                    painter = painterResource(id = R.drawable.baseline_photo),
                     contentDescription = "App Icon",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -50,7 +50,7 @@ fun SongListItem(songModel: SongModel, onClick: (songModel: SongModel) -> Unit) 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = songModel.title.toString(), style = MaterialTheme.typography.subtitle1)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = songModel.artist.toString(), style = MaterialTheme.typography.caption, color = Color.DarkGray)
+                Text(text = songModel.artist.toString(), style = MaterialTheme.typography.caption)
             }
         }
     }

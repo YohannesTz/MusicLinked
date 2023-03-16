@@ -4,9 +4,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +19,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,7 +27,6 @@ import com.github.yohannes.musiclinked.R
 import com.github.yohannes.musiclinked.data.models.SongModel
 import com.github.yohannes.musiclinked.ui.screens.home.components.IconBtn
 import com.github.yohannes.musiclinked.ui.screens.home.components.SongListItem
-import com.github.yohannes.musiclinked.ui.theme.MusicLinkedTheme
 import com.github.yohannes.musiclinked.viewmodels.HomeViewModel
 import java.util.*
 
@@ -47,6 +46,8 @@ fun HomeScreen(
     )
 
     BottomSheetScaffold(
+        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
+        sheetElevation = 8.dp,
         sheetContent = {
             homeViewModel.currentPlayingAudio.value?.let { song ->
                 PlayerBottomSheet(
@@ -74,7 +75,7 @@ fun HomeScreen(
                         homeViewModel.shuffle()
                     },
                     isPlaying = homeViewModel.isAudioPlaying,
-                    elapsedTime = homeViewModel.currentPlayBackPosition
+                    elapsedTime = homeViewModel.currentPlayBackPosition,
                 )
             }
         },
@@ -103,7 +104,19 @@ fun HomeScreen(
                 }
 
             } else {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())) {
+                    TopAppBar(
+                        elevation = 4.dp,
+                        title = {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                Text("MusicLinked")
+                            }
+                        },
+                        backgroundColor =  MaterialTheme.colors.primarySurface,
+                    )
+
                     state.songsList.forEach { songModel ->
                         SongListItem(
                             songModel = songModel,
@@ -131,25 +144,28 @@ private fun formatDuration(position: Long): String {
     }
 }
 
+/*
 @Preview(showBackground = false)
 @Composable
 fun BottomBarPreview() {
     MusicLinkedTheme {
         PlayerBottomSheet(
             progress = 1f,
+            elapsedTime = 0,
             onProgressChange = {},
             songModel = SongModel(),
             onStart = {},
             onNext = {},
             onPrevious = {},
-            isPlaying = false,
-            elapsedTime = 0,
             onLoop = {},
             onRepeat = {},
-            onShuffle = {}
+            onShuffle = {},
+            isPlaying = false,
+            playBackState = homeViewModel.playbackState
         )
     }
 }
+*/
 
 @Composable
 fun PlayerBottomSheet(
@@ -166,38 +182,38 @@ fun PlayerBottomSheet(
     isPlaying: Boolean
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
+        if (songModel.image != null) {
+            Image(
+                bitmap = songModel.image.asImageBitmap(),
+                contentDescription = "App Icon",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.baseline_photo),
+                contentDescription = "App Icon",
+                contentScale = ContentScale.Crop,
+
+                modifier = Modifier
+                    .size(300.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 8.dp)
         ) {
-            if (songModel.image != null) {
-                Image(
-                    bitmap = songModel.image.asImageBitmap(),
-                    contentDescription = "App Icon",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.baseline_photo),
-                    contentDescription = "App Icon",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
+            //Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = songModel.title.toString(), style = MaterialTheme.typography.subtitle1)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = songModel.artist.toString(),
-                    style = MaterialTheme.typography.caption,
-                    color = Color.DarkGray
+                    style = MaterialTheme.typography.caption
                 )
             }
         }
@@ -218,9 +234,12 @@ fun PlayerBottomSheet(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            IconBtn(resIcon = R.drawable.baseline_loop_24, onClick = {
-                onLoop.invoke()
-            })
+            /*IconBtn(resIcon = R.drawable.baseline_loop_24, onClick = {
+                onLoop.invoke() //apparently you don't need this... (I know right?)
+            })*/
+            IconBtn(resIcon = R.drawable.baseline_shuffle_24, onClick = {
+                onShuffle.invoke()
+            }, selected = false)
             IconBtn(resIcon = R.drawable.baseline_skip_previous_24, onClick = {
                 onPrevious.invoke()
             })
@@ -231,7 +250,7 @@ fun PlayerBottomSheet(
                 contentAlignment = Alignment.Center
             ) {
                 IconBtn(
-                    tint = Color.White,
+                    tint = MaterialTheme.colors.background,
                     resIcon = if (isPlaying) R.drawable.baseline_pause_24 else R.drawable.baseline_play_arrow_24,
                     onClick = {
                         onStart.invoke(songModel)
@@ -244,9 +263,6 @@ fun PlayerBottomSheet(
             })
             IconBtn(resIcon = R.drawable.baseline_repeat_24, onClick = {
                 onRepeat.invoke()
-            })
-            IconBtn(resIcon = R.drawable.baseline_shuffle_24, onClick = {
-                onShuffle.invoke()
             })
         }
     }

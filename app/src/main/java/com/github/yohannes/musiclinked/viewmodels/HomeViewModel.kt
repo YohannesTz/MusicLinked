@@ -61,12 +61,13 @@ class HomeViewModel @Inject constructor(
         get() = PlayerService.currentDuration
 
     var currentAudioProgress = mutableStateOf(0f)
+
     init {
         viewModelScope.launch {
-  //          withContext(Dispatchers.Main) {
-                _state.value = state.value.copy(
-                    isLoading = true
-                )
+            //          withContext(Dispatchers.Main) {
+            _state.value = state.value.copy(
+                isLoading = true
+            )
 //            }
 
             /*withContext(Dispatchers.IO) {
@@ -180,7 +181,6 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
 
 
     override fun onCleared() {
